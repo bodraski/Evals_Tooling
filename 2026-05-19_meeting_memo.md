@@ -1,6 +1,6 @@
 # Meeting Notes - First Project Meeting
 
-> **Date:** 2020-05-19  
+> **Date:** 2020-05-19
 
 
 ## Mentor
@@ -16,7 +16,6 @@
 - introductions
 - project ideas discussion
 - plan next steps
-
 
 ## Discussion
 

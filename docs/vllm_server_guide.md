@@ -57,7 +57,7 @@ sudo /opt/vllm/run.sh
  
 ```bash
 # другая модель
-sudo /opt/vllm/run.sh --model TheBloke/Mistral-7B-Instruct-v0.3-AWQ
+sudo /opt/vllm/run.sh --model solidrust/Mistral-7B-Instruct-v0.3-AWQ
  
 # изменить длину контекста (максимум 8192)
 sudo /opt/vllm/run.sh --max-model-len 2048
@@ -75,7 +75,7 @@ sudo /opt/vllm/run.sh --max-model-len 4096 --gpu-memory-utilization 0.95
 |--------|-------------|-----------------|
 | `casperhansen/deepseek-r1-distill-qwen-7b-awq` | awq_marlin | deepseek_r1 |
 | `Qwen/Qwen2.5-7B-Instruct-AWQ` | awq_marlin | — |
-| `TheBloke/Mistral-7B-Instruct-v0.3-AWQ` | awq_marlin | — |
+| `solidrust/Mistral-7B-Instruct-v0.3-AWQ` | awq_marlin | — |
  
 Квантизация и reasoning parser подставляются автоматически по модели.
  

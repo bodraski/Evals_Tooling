@@ -30,10 +30,11 @@ Catch `NotFoundError` in `VLLMAPI.generate()` and raise a `RuntimeError` with an
 except NotFoundError as ex:
     if len(tools) > 0:
         raise RuntimeError(
-            "vLLM returned 404 for a request with tools. "
-            "Either start vLLM with --enable-auto-tool-choice and "
-            "--tool-call-parser=<parser> (e.g. hermes, llama3_json, mistral), "
-            "or use -M emulate_tools=true as a fallback."
+                    "vLLM returned 404 for a request with tools. "
+                    "This might indicate vLLM server was started without tool calling enabled."
+                    "Try starting vLLM with --enable-auto-tool-choice and "
+                    "--tool-call-parser=<parser> (e.g. hermes, llama3_json, mistral), "
+                    "or use -M emulate_tools=true as a fallback."
         ) from ex
     raise
 ```

@@ -21,6 +21,8 @@ When a vLLM server is started without `--enable-auto-tool-choice` and `--tool-ca
 
 ## Proposed fix
 
+### Option 1
+
 Catch `NotFoundError` in `VLLMAPI.generate()` and raise a `RuntimeError` with an actionable message when tools were present in the request:
 
 
@@ -36,6 +38,28 @@ except NotFoundError as ex:
     raise
 ```
 
-Happy to send a PR 
+### Option 2
+
+Automatically fall back to `emulate_tools` with a warning. 
+Better UX out of the box, but silently uses a fallback tool calling method which is less accurate.
+
+```python
+except NotFoundError:
+            if len(tools) > 0:
+                warn_once(
+                    logger,
+                    "vLLM returned 404 for a request with tools — "
+                    "server is not configured for native tool calling. "
+                    "Falling back to tool emulation. For better results, "
+                    "restart vLLM with --enable-auto-tool-choice and "
+                    "--tool-call-parser=<parser> (e.g. hermes, llama3_json, mistral).",
+                )
+                self.emulate_tools = True
+                return await super().generate(input, tools, tool_choice, config)
+            raise
+```
+
+
+Happy to proceed with whichever approach you prefer.
 
 

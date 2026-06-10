@@ -14,6 +14,35 @@ When serving with vLLM, tool calling requires two additional flags:
 - Both flags are required together. --enable-auto-tool-choice tells vLLM to allow the model to decide when to invoke tools, while --tool-call-parser <parser> provides the actual parsing logic that extracts structured tool_calls from the model's raw text output (the specific format varies by model family and chat template). 
 - Without the parser, vLLM has no way to interpret the model's output! And vllm won't even start outputting the TypeError: Error: --enable-auto-tool-choice requires --tool-call-parser
 
+## vLLM Tool Calling: Launch Scenarios
+
+| Scenario | vLLM starts? | Eval result | Error |
+|----------|-------------|-------------|-------|
+| Neither flag set | ✅ Yes | ❌ Fails at runtime | `400 BadRequestError: "auto" tool choice requires --enable-auto-tool-choice and --tool-call-parser to be set` |
+| `--enable-auto-tool-choice` only | ❌ No | ❌ Never reached | `TypeError: Error: --enable-auto-tool-choice requires --tool-call-parser` (startup crash) |
+| Both flags set correctly | ✅ Yes | ✅ Works | — |
+
+### Why these flags can't be set automatically by Inspect or the client
+
+The flags are **vLLM server startup arguments** — they must be passed when launching the container/process, before any client connects. Neither Inspect AI nor any API client can set them retroactively on a running server.
+
+Additionally, `--tool-call-parser` is **model-specific**: the correct value depends on the model being served (`hermes`, `mistral`, `deepseek_r1`, `llama3_json`, etc.). There is no universal default that works across models, so auto-detection would require either a registry of model→parser mappings or a convention that doesn't currently exist in vLLM.
+
+### Why not fall back to `emulate_tools`?
+ 
+Inspect AI's `emulate_tools=True` is a client-side workaround that converts tool calls into plain-text prompts, bypassing native tool calling entirely. It was considered as a fallback but rejected for two reasons:
+ 
+- **Permanent mutation**: setting `emulate_tools` on a model object affects all subsequent tasks in the same eval run, even unintended ones — the side effect is silent and hard to trace.
+- **Result validity**: emulated tool calling produces different model behaviour than native tool calling, making results incomparable to real-world usage.
+The correct approach is to fail explicitly with an actionable error when the server flags are missing, rather than silently degrading to emulation.
+ 
+**Correct launch example:**
+```bash
+docker run -d --gpus all -p 8000:8000 vllm/vllm-openai:latest \
+  --model <model-name> \
+  --enable-auto-tool-choice \
+  --tool-call-parser <parser>   # e.g. hermes, mistral, deepseek_r1
+```
 ---
 
 ## How to Choose the Right `--tool-call-parser` in vLLM
